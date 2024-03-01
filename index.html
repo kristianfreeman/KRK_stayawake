@@ -1,16 +1,60 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<html lang="en">
+<!DOCTYPE html>
+<html>
 <head>
-<meta http-equiv="content-type" content="text/html; charset=utf-8">
-<meta http-equiv="refresh" content="1500">
-  <title>Speaker Saver</title>
+    <title>Sine Wave Generator</title>
 </head>
-
 <body>
-  <audio autoplay loop="loop" preload="auto" controls>
-    <source src="10hz_tone.wav" type="audio/wav">
-    Your browser does not support the audio element.
-  </audio>
+    <div>
+      <button id="playPauseBtn">Play</button>
+    </div>
+    <div>
+      <label for="frequencySlider">Frequency</label>
+      <input type="range" id="frequencySlider" min="1" max="2000" value="10">
+      <p id="frequency">10Hz</p>
+    </div>
+    <script>
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        let oscillator = null;
+        let gainNode = audioCtx.createGain(); // Create a GainNode
+        let isPlaying = false;
 
+        // Set the volume to be quieter
+        gainNode.gain.value = 0.5; // Lower values mean quieter sound
+        gainNode.connect(audioCtx.destination);
+
+        // Initialize oscillator
+        function initOscillator() {
+            oscillator = audioCtx.createOscillator();
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(10, audioCtx.currentTime); // Default frequency 10Hz
+            oscillator.connect(gainNode); // Connect the oscillator to the gainNode instead of directly to the destination
+        }
+
+        // Play/Pause toggle
+        document.getElementById('playPauseBtn').addEventListener('click', function() {
+            if (!isPlaying) {
+                if (!oscillator) {
+                    initOscillator();
+                }
+                oscillator.start();
+                this.textContent = 'Pause';
+            } else {
+                oscillator.stop();
+                oscillator = null; // Reinitialize the oscillator to start it again
+                this.textContent = 'Play';
+            }
+            isPlaying = !isPlaying;
+        });
+
+        // Frequency control
+        document.getElementById('frequencySlider').addEventListener('input', function() {
+            if (oscillator) {
+                const frequency = this.value;
+                oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime);
+                document.getElementById('frequency').textContent = frequency + 'Hz';
+            }
+        });
+    </script>
 </body>
 </html>
+
